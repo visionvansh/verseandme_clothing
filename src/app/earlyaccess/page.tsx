@@ -15,6 +15,12 @@ declare global {
   }
 }
 
+// Email validation utility
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 // Professional Skeleton Loader Component
 const SkeletonLoader = () => (
   <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-[#2a1810] via-[#3d2617] to-[#1a0f08] flex items-center justify-center">
@@ -61,6 +67,7 @@ const EarlyAccessPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingDevice, setIsCheckingDevice] = useState(true);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
   const [registeredEmail, setRegisteredEmail] = useState<string>("");
 
@@ -92,14 +99,42 @@ const EarlyAccessPage = () => {
     initFingerprint();
   }, []);
 
+  // Real-time email validation
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailError("");
+    setError("");
+
+    // Only validate if user has typed something
+    if (value.length > 0) {
+      if (!isValidEmail(value)) {
+        setEmailError("Please enter a valid email address");
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
+    setEmailError("");
+
+    // Client-side validation
+    if (!email.trim()) {
+      setEmailError("Email address is required");
+      return;
+    }
+
+    if (!isValidEmail(email.trim())) {
+      setEmailError("Please enter a valid email address (e.g., name@example.com)");
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const userData = {
-        email,
+        email: email.trim().toLowerCase(),
         deviceFingerprint,
         screenWidth: window.screen.width,
         screenHeight: window.screen.height,
@@ -122,8 +157,12 @@ const EarlyAccessPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.alreadyExists) {
+        if (response.status === 400) {
+          setEmailError(data.error || 'Invalid email format');
+        } else if (data.alreadyExists) {
           setError('This email is already registered for early access.');
+        } else if (response.status === 500) {
+          setError('Server error. Please try again in a moment.');
         } else {
           setError(data.error || 'Something went wrong. Please try again.');
         }
@@ -131,7 +170,7 @@ const EarlyAccessPage = () => {
         return;
       }
 
-      setRegisteredEmail(email);
+      setRegisteredEmail(email.trim());
       setIsLoading(false);
       setIsSubmitted(true);
       
@@ -271,25 +310,44 @@ const EarlyAccessPage = () => {
                       <input
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={handleEmailChange}
                         required
                         disabled={isLoading}
                         placeholder="Enter your email address"
-                        className="w-full px-5 py-3.5 sm:px-6 sm:py-4 bg-[#1a0f08]/60 border-2 border-[#d4a574]/30 text-[#e2c299] placeholder-[#d4a574]/50 focus:outline-none focus:border-[#d4a574] focus:bg-[#1a0f08]/80 transition-all duration-300 text-sm sm:text-base rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`w-full px-5 py-3.5 sm:px-6 sm:py-4 bg-[#1a0f08]/60 border-2 ${
+                          emailError 
+                            ? 'border-red-500/50' 
+                            : 'border-[#d4a574]/30 focus:border-[#d4a574]'
+                        } text-[#e2c299] placeholder-[#d4a574]/50 focus:outline-none focus:bg-[#1a0f08]/80 transition-all duration-300 text-sm sm:text-base rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                         style={{ fontFamily: "'Inter', sans-serif" }}
                       />
+                      {emailError && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute left-0 -bottom-6 text-red-400 text-xs sm:text-sm flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          {emailError}
+                        </motion.div>
+                      )}
                     </div>
 
-                    {/* Error Message */}
+                    {/* General Error Message */}
                     <AnimatePresence>
                       {error && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="text-red-400 text-center text-xs sm:text-sm bg-red-900/20 border border-red-500/30 rounded-lg p-3"
+                          className="text-red-400 text-center text-xs sm:text-sm bg-red-900/20 border border-red-500/30 rounded-lg p-3 flex items-start gap-2"
                         >
-                          {error}
+                          <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                          <span>{error}</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -297,9 +355,9 @@ const EarlyAccessPage = () => {
                     {/* Submit Button */}
                     <motion.button
                       type="submit"
-                      disabled={isLoading}
-                      whileHover={!isLoading ? { scale: 1.01 } : {}}
-                      whileTap={!isLoading ? { scale: 0.99 } : {}}
+                      disabled={isLoading || !!emailError}
+                      whileHover={!isLoading && !emailError ? { scale: 1.01 } : {}}
+                      whileTap={!isLoading && !emailError ? { scale: 0.99 } : {}}
                       className="w-full bg-gradient-to-r from-[#d4a574] to-[#e2c299] text-[#1a0f08] px-6 py-3.5 sm:py-4 text-base sm:text-lg font-bold tracking-wide relative overflow-hidden transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg shadow-lg hover:shadow-[0_0_25px_rgba(212,165,116,0.4)]"
                       style={{
                         fontFamily: "'Montserrat', sans-serif",
