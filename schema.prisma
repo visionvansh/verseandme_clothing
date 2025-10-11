@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or "mysql", "sqlite", "sqlserver", "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model EarlyAccessSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  
+  // Device Fingerprinting
+  deviceFingerprint String?  @unique
+  
+  // Location Data
+  ipAddress String?
+  country   String?
+  city      String?
+  region    String?
+  timezone  String?
+  
+  // Browser/Device Info
+  userAgent String?
+  browser   String?
+  os        String?
+  device    String?
+  
+  // Screen Info
+  screenWidth  Int?
+  screenHeight Int?
+  
+  // Referral Info
+  referrer     String?
+  landingPage  String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  
+  // Engagement
+  language     String?
+  
+  // Visit tracking
+  lastVisitAt  DateTime @default(now())
+  visitCount   Int      @default(1)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([email])
+  @@index([deviceFingerprint])
+  @@index([country])
+  @@index([createdAt])
+}
