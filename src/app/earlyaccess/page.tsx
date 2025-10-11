@@ -274,35 +274,25 @@ const EarlyAccessPage = () => {
 
                   {/* Heading */}
                   <div className="text-center mb-6 sm:mb-8">
-                    <h1
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#e2c299] mb-2 tracking-tight"
+                    <h4
+                      className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-[#e2c299] mb-2 tracking-tight"
                       style={{
                         fontFamily: "'Montserrat', 'Helvetica Neue', sans-serif",
                         textShadow: "0 0 30px rgba(212, 165, 116, 0.3)",
                       }}
                     >
-                      VerseAndMe
-                    </h1>
+                      JOIN THE VERSEANDME FAMILY
+                    </h4>
                     <p
                       className="text-base sm:text-lg md:text-xl text-[#d4a574] font-light tracking-wider"
                       style={{
                         fontFamily: "'Inter', sans-serif",
                       }}
                     >
-                      Faith-Inspired Living
+                      GET ACCESS TO EARLY DROPS
                     </p>
                     <div className="w-24 sm:w-32 h-px mx-auto mt-4 bg-gradient-to-r from-transparent via-[#d4a574] to-transparent" />
                   </div>
-
-                  {/* Subheading */}
-                  <p
-                    className="text-center text-[#e2c299]/90 text-sm sm:text-base md:text-lg mb-8 sm:mb-10 leading-relaxed px-2 max-w-xl mx-auto"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    Join our exclusive early access community and be the first to experience our 
-                    <span className="text-[#d4a574] font-medium"> curated collection </span> 
-                    of faith-based products and inspirational content.
-                  </p>
 
                   {/* Form */}
                   <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
@@ -445,7 +435,7 @@ const EarlyAccessPage = () => {
 
                   {/* Success Message */}
                   <h2
-                    className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e2c299] mb-4 sm:mb-6"
+                    className="text-xl sm:text-2xl md:text-4xl font-bold text-[#e2c299] mb-4 sm:mb-6"
                     style={{
                       fontFamily: "'Montserrat', sans-serif",
                       textShadow: "0 0 20px rgba(212, 165, 116, 0.3)",
@@ -479,71 +469,6 @@ const EarlyAccessPage = () => {
                     Watch your inbox for exclusive updates, special offers, and inspiration 
                     from our faith-based collection. You&apos;ll be the first to know when we launch!
                   </p>
-
-                  {/* Bible Verse */}
-                  <div className="border-t border-b border-[#d4a574]/20 py-6 mb-8 px-2">
-                    <p className="text-[#e2c299] italic text-sm sm:text-base mb-2 leading-relaxed max-w-md mx-auto">
-                      &ldquo;For where two or three gather in my name, there am I with them.&rdquo;
-                    </p>
-                    <p className="text-[#d4a574]/60 text-xs sm:text-sm font-medium">
-                      — Matthew 18:20
-                    </p>
-                  </div>
-
-                  {/* Static Decorative Crosses */}
-                  <div className="flex justify-center space-x-4 mb-8">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#d4a574"
-                      strokeWidth={2}
-                      className="w-6 h-6 sm:w-7 sm:h-7 opacity-60"
-                    >
-                      <path d="M12 2v20M2 12h20" />
-                    </svg>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#e2c299"
-                      strokeWidth={2}
-                      className="w-6 h-6 sm:w-7 sm:h-7 opacity-60"
-                    >
-                      <path d="M12 2v20M2 12h20" />
-                    </svg>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#d4a574"
-                      strokeWidth={2}
-                      className="w-6 h-6 sm:w-7 sm:h-7 opacity-60"
-                    >
-                      <path d="M12 2v20M2 12h20" />
-                    </svg>
-                  </div>
-
-                  {/* Social Section */}
-                  <div className="border-t border-[#d4a574]/20 pt-6">
-                    <p className="text-[#d4a574]/50 text-xs sm:text-sm mb-4 uppercase tracking-wider font-medium">
-                      Join Our Community
-                    </p>
-                    <div className="flex justify-center space-x-5">
-                      {[
-                        { name: "Instagram", icon: "IG" },
-                        { name: "Facebook", icon: "FB" },
-                        { name: "YouTube", icon: "YT" }
-                      ].map((social) => (
-                        <a
-                          key={social.name}
-                          href="#"
-                          className="w-10 h-10 sm:w-11 sm:h-11 border-2 border-[#d4a574]/40 rounded-full flex items-center justify-center text-[#d4a574] hover:bg-[#d4a574]/10 hover:border-[#d4a574] transition-all duration-300 group"
-                        >
-                          <span className="text-xs font-bold group-hover:scale-110 transition-transform">
-                            {social.icon}
-                          </span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </motion.div>
             )}
