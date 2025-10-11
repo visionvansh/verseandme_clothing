@@ -25,37 +25,37 @@ const isValidEmail = (email: string): boolean => {
 const SkeletonLoader = () => (
   <div className="relative w-full min-h-screen overflow-hidden bg-white flex items-center justify-center">
     <div className="w-full max-w-2xl px-4">
-      <div className="relative bg-white border border-[#d4a574]/30 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl rounded-lg">
+      <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 backdrop-blur-sm border border-gray-300 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl rounded-lg">
         
         {/* Logo Skeleton */}
         <div className="flex justify-center mb-6 sm:mb-8">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#d4a574]/20 rounded-full animate-pulse" />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-full animate-pulse" />
         </div>
 
         {/* Title Skeleton */}
         <div className="space-y-4 mb-8">
-          <div className="h-8 sm:h-12 bg-[#d4a574]/20 rounded-lg w-3/4 mx-auto animate-pulse" />
-          <div className="h-6 sm:h-8 bg-[#d4a574]/15 rounded-lg w-1/2 mx-auto animate-pulse" />
+          <div className="h-8 sm:h-12 bg-gray-200 rounded-lg w-3/4 mx-auto animate-pulse" />
+          <div className="h-6 sm:h-8 bg-gray-200 rounded-lg w-1/2 mx-auto animate-pulse" />
         </div>
 
         {/* Divider Skeleton */}
-        <div className="h-1 w-32 bg-[#d4a574]/20 mx-auto mb-6 animate-pulse" />
+        <div className="h-1 w-32 bg-gray-200 mx-auto mb-6 animate-pulse" />
 
         {/* Description Skeleton */}
         <div className="space-y-3 mb-8">
-          <div className="h-4 bg-[#d4a574]/15 rounded w-full animate-pulse" />
-          <div className="h-4 bg-[#d4a574]/15 rounded w-5/6 mx-auto animate-pulse" />
-          <div className="h-4 bg-[#d4a574]/15 rounded w-4/6 mx-auto animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-5/6 mx-auto animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-4/6 mx-auto animate-pulse" />
         </div>
 
         {/* Input Skeleton */}
-        <div className="h-12 sm:h-14 bg-[#d4a574]/20 rounded-md mb-4 animate-pulse" />
+        <div className="h-12 sm:h-14 bg-gray-200 rounded-md mb-4 animate-pulse" />
 
         {/* Button Skeleton */}
-        <div className="h-12 sm:h-14 bg-[#d4a574]/30 rounded-md mb-4 animate-pulse" />
+        <div className="h-12 sm:h-14 bg-gray-200 rounded-md mb-4 animate-pulse" />
 
         {/* Footer Text Skeleton */}
-        <div className="h-3 bg-[#d4a574]/10 rounded w-2/3 mx-auto animate-pulse" />
+        <div className="h-3 bg-gray-200 rounded w-2/3 mx-auto animate-pulse" />
       </div>
     </div>
   </div>
@@ -195,15 +195,6 @@ const EarlyAccessPage = () => {
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-white">
-      {/* Subtle Background Pattern - Static */}
-      <div
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(212, 165, 116, 0.2) 0%, transparent 50%),
-                           radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.15) 0%, transparent 50%)`,
-        }}
-      />
-
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8 sm:py-12 sm:px-6 md:px-8">
         <motion.div
@@ -223,49 +214,19 @@ const EarlyAccessPage = () => {
                 className="relative"
               >
                 {/* Subtle Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#d4a574] via-[#e2c299] to-[#d4a574] opacity-10 blur-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 opacity-10 blur-2xl" />
 
-                <div className="relative bg-white border border-[#d4a574]/30 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl rounded-lg">
+                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 backdrop-blur-sm border border-gray-300 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl rounded-lg">
                   
-                  {/* Logo Icon */}
-                  <div className="flex justify-center mb-6 sm:mb-8">
-                    <div className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 bg-gradient-to-br from-[#d4a574] to-[#e2c299] rounded-full flex items-center justify-center shadow-lg">
-                      <svg
-                        className="w-8 h-8 sm:w-10 sm:h-10 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
                   {/* Heading */}
                   <div className="text-center mb-6 sm:mb-8">
-                    <h4
-                      className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-[#e2c299] mb-2 tracking-tight"
-                      style={{
-                        fontFamily: "'Montserrat', 'Helvetica Neue', sans-serif",
-                        textShadow: "0 0 30px rgba(212, 165, 116, 0.3)",
-                      }}
-                    >
+                    <h4 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-2 tracking-tight whitespace-nowrap">
                       JOIN THE VERSEANDME FAMILY
                     </h4>
-                    <p
-                      className="text-base sm:text-lg md:text-xl text-[#d4a574] font-light tracking-wider"
-                      style={{
-                        fontFamily: "'Inter', sans-serif",
-                      }}
-                    >
+                    <p className="text-base sm:text-lg md:text-xl text-gray-600 font-light tracking-wider">
                       GET ACCESS TO EARLY DROPS
                     </p>
-                    <div className="w-24 sm:w-32 h-px mx-auto mt-4 bg-gradient-to-r from-transparent via-[#d4a574] to-transparent" />
+                    <div className="w-24 sm:w-32 h-px mx-auto mt-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />
                   </div>
 
                   {/* Form */}
@@ -281,9 +242,8 @@ const EarlyAccessPage = () => {
                         className={`w-full px-5 py-3.5 sm:px-6 sm:py-4 bg-white border-2 ${
                           emailError 
                             ? 'border-red-500/50' 
-                            : 'border-[#d4a574]/30 focus:border-[#d4a574]'
-                        } text-[#e2c299] placeholder-[#d4a574]/50 focus:outline-none focus:bg-white transition-all duration-300 text-sm sm:text-base rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`}
-                        style={{ fontFamily: "'Inter', sans-serif" }}
+                            : 'border-gray-300 focus:border-gray-500'
+                        } text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white transition-all duration-300 text-sm sm:text-base rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                       />
                       {emailError && (
                         <motion.div
@@ -306,7 +266,7 @@ const EarlyAccessPage = () => {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="text-red-400 text-center text-xs sm:text-sm bg-red-900/20 border border-red-500/30 rounded-lg p-3 flex items-start gap-2"
+                          className="text-red-400 text-center text-xs sm:text-sm bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2"
                         >
                           <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -316,16 +276,13 @@ const EarlyAccessPage = () => {
                       )}
                     </AnimatePresence>
 
-                    {/* Submit Button */}
+                    {/* Submit Button - Black with Fade Effect */}
                     <motion.button
                       type="submit"
                       disabled={isLoading || !!emailError}
-                      whileHover={!isLoading && !emailError ? { scale: 1.01 } : {}}
+                      whileHover={!isLoading && !emailError ? { scale: 1.01, opacity: 0.9 } : {}}
                       whileTap={!isLoading && !emailError ? { scale: 0.99 } : {}}
-                      className="w-full bg-gradient-to-r from-[#d4a574] to-[#e2c299] text-[#1a0f08] px-6 py-3.5 sm:py-4 text-base sm:text-lg font-bold tracking-wide relative overflow-hidden transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg shadow-lg hover:shadow-[0_0_25px_rgba(212,165,116,0.4)]"
-                      style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                      }}
+                      className="w-full bg-black text-white px-6 py-3.5 sm:py-4 text-base sm:text-lg font-bold tracking-wide relative overflow-hidden transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg shadow-lg hover:opacity-90"
                     >
                       {isLoading ? (
                         <span className="flex items-center justify-center">
@@ -357,10 +314,7 @@ const EarlyAccessPage = () => {
                   </form>
 
                   {/* Privacy Note */}
-                  <p
-                    className="text-center text-[#d4a574]/50 text-xs sm:text-sm mt-6 px-2"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
+                  <p className="text-center text-gray-500 text-xs sm:text-sm mt-6 px-2">
                     <svg
                       className="inline-block w-3 h-3 sm:w-4 sm:h-4 mr-1"
                       fill="currentColor"
@@ -384,13 +338,13 @@ const EarlyAccessPage = () => {
                 transition={{ duration: 0.5 }}
                 className="relative"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#d4a574] via-[#e2c299] to-[#d4a574] opacity-20 blur-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 opacity-20 blur-2xl" />
 
-                <div className="relative bg-white border border-[#d4a574]/40 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl text-center rounded-lg">
+                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 backdrop-blur-sm border border-gray-300 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl text-center rounded-lg">
                   
                   {/* Success Icon */}
                   <div className="flex justify-center mb-6 sm:mb-8">
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#d4a574] to-[#e2c299] rounded-full flex items-center justify-center shadow-lg">
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center shadow-lg">
                       <svg
                         className="w-12 h-12 sm:w-14 sm:h-14 text-white"
                         fill="none"
@@ -408,38 +362,26 @@ const EarlyAccessPage = () => {
                   </div>
 
                   {/* Success Message */}
-                  <h2
-                    className="text-xl sm:text-2xl md:text-4xl font-bold text-[#e2c299] mb-4 sm:mb-6"
-                    style={{
-                      fontFamily: "'Montserrat', sans-serif",
-                      textShadow: "0 0 20px rgba(212, 165, 116, 0.3)",
-                    }}
-                  >
+                  <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-gray-800 mb-4 sm:mb-6">
                     Welcome to VerseAndMe!
                   </h2>
 
-                  <div className="w-32 h-px mx-auto bg-gradient-to-r from-transparent via-[#d4a574] to-transparent mb-6 sm:mb-8" />
+                  <div className="w-32 h-px mx-auto bg-gradient-to-r from-transparent via-gray-400 to-transparent mb-6 sm:mb-8" />
 
-                  <p
-                    className="text-[#e2c299]/90 text-base sm:text-lg md:text-xl mb-6 leading-relaxed px-2"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
+                  <p className="text-gray-600 text-base sm:text-lg md:text-xl mb-6 leading-relaxed px-2">
                     {registeredEmail && (
-                      <span className="block text-[#d4a574] font-semibold mb-3 text-sm sm:text-base break-all">
+                      <span className="block text-gray-800 font-semibold mb-3 text-sm sm:text-base break-all">
                         {registeredEmail}
                       </span>
                     )}
                     You&apos;ve successfully joined our{" "}
-                    <span className="text-[#d4a574] font-semibold">
+                    <span className="text-gray-800 font-semibold">
                       early access community
                     </span>
                     !
                   </p>
 
-                  <p
-                    className="text-[#d4a574]/70 text-sm sm:text-base mb-8 px-2 max-w-lg mx-auto"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
+                  <p className="text-gray-500 text-sm sm:text-base mb-8 px-2 max-w-lg mx-auto">
                     Watch your inbox for exclusive updates, special offers, and inspiration 
                     from our faith-based collection. You&apos;ll be the first to know when we launch!
                   </p>
