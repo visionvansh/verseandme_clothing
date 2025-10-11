@@ -1,17 +1,45 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import { motion, useScroll } from "framer-motion";
+import client from "@/lib/shopify";
+import ProductCard from "@/components/ProductCard";
+import Link from "next/link";
+import Image from "next/image";
+import { FaShoppingCart, FaUser, FaBars } from "react-icons/fa";
 
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  z: number;
-  size: number;
-  speed: number;
-  color: string;
+// Define interfaces for Shopify data
+interface Price {
+  amount: string;
+  currencyCode: string;
+}
+
+interface VariantNode {
+  price: Price;
+}
+
+interface VariantEdge {
+  node: VariantNode;
+}
+
+interface ImageNode {
+  url: string;
+}
+
+interface ImageEdge {
+  node: ImageNode;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  images: { edges: ImageEdge[] };
+  variants: { edges: VariantEdge[] };
+}
+
+interface ProductEdge {
+  node: Product;
 }
 
 interface CrossParticleProps {
@@ -22,9 +50,16 @@ interface CrossParticleProps {
   color: string;
 }
 
-const CrossParticle = ({ x, y, z, size, color }: CrossParticleProps) => (
+interface HeaderCrossProps {
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+}
+
+const CrossParticle: React.FC<CrossParticleProps> = ({ x, y, z, size, color }) => (
   <motion.svg
-    className="absolute pointer-events-none"
+    className="absolute"
     style={{
       left: `${x}%`,
       top: `${y}%`,
@@ -52,95 +87,233 @@ const CrossParticle = ({ x, y, z, size, color }: CrossParticleProps) => (
   </motion.svg>
 );
 
-interface GlowingCrossProps {
-  className?: string;
-}
-
-const GlowingCross = ({ className }: GlowingCrossProps) => (
-  <motion.svg
-    className={className}
+const CrossSVG: React.FC<{ color: string }> = ({ color }) => (
+  <svg
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#d4a574"
+    stroke={color}
     strokeWidth={2}
-    animate={{
-      opacity: [0.3, 0.8, 0.3],
-      scale: [0.9, 1.1, 0.9],
-      rotate: [0, 180, 360],
-    }}
-    transition={{
-      duration: 4,
-      repeat: Infinity,
-      ease: "easeInOut",
-    }}
+    className="w-6 h-6"
+    style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+  >
+    <path d="M12 2v20M2 12h20" />
+  </svg>
+);
+
+const HeaderCross: React.FC<HeaderCrossProps> = ({ x, y, size, color }) => (
+  <motion.svg
+    className="absolute"
     style={{
-      filter: "drop-shadow(0 0 8px #d4a574)",
+      left: `${x}%`,
+      top: `${y}%`,
+      width: `${size}rem`,
+      height: `${size}rem`,
+      filter: `drop-shadow(0 0 4px ${color})`,
     }}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={2}
   >
     <path d="M12 2v20M2 12h20" />
   </motion.svg>
 );
 
-const EarlyAccessPage = () => {
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingDevice, setIsCheckingDevice] = useState(true);
-  const [error, setError] = useState("");
-  const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
-  const [registeredEmail, setRegisteredEmail] = useState<string>("");
+const Header: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
 
-  // Generate device fingerprint and check if already registered
   useEffect(() => {
-    const initFingerprint = async () => {
-      try {
-        const fp = await FingerprintJS.load();
-        const result = await fp.get();
-        const visitorId = result.visitorId;
-        
-        setDeviceFingerprint(visitorId);
-
-        // Check if this device is already registered
-        const response = await fetch(`/api/early-access?fingerprint=${visitorId}`);
-        const data = await response.json();
-
-        if (data.exists) {
-          setRegisteredEmail(data.subscriber.email);
-          setIsSubmitted(true);
-        }
-      } catch (error) {
-        console.error('Error generating fingerprint:', error);
-      } finally {
-        setIsCheckingDevice(false);
-      }
+    const handleScroll = () => {
+      setIsScrolled(scrollY.get() > 0);
     };
+    const unsubscribe = scrollY.onChange(handleScroll);
+    return () => unsubscribe();
+  }, [scrollY]);
 
-    initFingerprint();
-  }, []);
+  return (
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
+      className="fixed w-full top-0 text-white py-2 z-50 shadow-2xl"
+    >
+      <motion.div
+        className="absolute inset-0"
+        initial={{ backgroundColor: "transparent" }}
+        animate={{ backgroundColor: isScrolled ? "#2b1e1e" : "transparent" }}
+        transition={{ duration: 0.1 }}
+      >
+        {isScrolled && (
+          <>
+            <HeaderCross x={10} y={50} size={0.8} color="#f5f5f5" />
+            <HeaderCross x={50} y={50} size={0.8} color="#f5f5f5" />
+            <HeaderCross x={90} y={50} size={0.8} color="#f5f5f5" />
+          </>
+        )}
+      </motion.div>
+      <div className="relative z-10 container mx-auto grid grid-cols-3 items-center px-6">
+        <div className="hidden md:block relative">
+          <motion.button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="text-[#f5f5f5] p-2"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FaBars className="text-lg" />
+          </motion.button>
+          {isDropdownOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute left-0 mt-2 w-48 bg-[#1a0f0b]/95 backdrop-blur-xl rounded-xl shadow-2xl p-5 border border-[#f5f5f5]/20"
+            >
+              <ul className="flex flex-col space-y-4">
+                {["Home", "Shop", "About", "Lookbook", "Journal"].map((item, index) => (
+                  <li key={index}>
+                    <a
+                      href={item === "Shop" ? "/product" : "/"}
+                      className="text-[#f5f5f5] text-lg hover:text-white transition duration-300"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </div>
 
-  // Particle animation
+        <motion.div
+          className="flex justify-center"
+          style={{
+            filter: "drop-shadow(0 0 12px rgba(255, 255, 255, 0.9))",
+          }}
+        >
+          <Image
+            src="/mainlogo.png"
+            alt="Logo"
+            width={80}
+            height={80}
+            className="h-20 w-20"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          />
+        </motion.div>
+
+        <div className="flex justify-end items-center space-x-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="text-[#f5f5f5] p-2"
+          >
+            <FaUser className="text-lg" />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="text-[#f5f5f5] p-2 flex items-center space-x-2"
+          >
+            <FaShoppingCart className="text-lg" />
+            <span style={{ fontFamily: "'Inter', sans-serif" }}>(0)</span>
+          </motion.button>
+        </div>
+
+        <div className="md:hidden flex items-center space-x-4 justify-end col-span-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="text-[#f5f5f5] p-2"
+          >
+            <FaShoppingCart className="text-lg" />
+          </motion.button>
+          <motion.button
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-[#f5f5f5] focus:outline-none w-8 h-8"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <svg
+              className={`w-8 h-8 transition-opacity duration-300 ${isOpen ? "opacity-0" : "opacity-100"}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+            <svg
+              className={`w-8 h-8 absolute top-0 left-0 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 2v20M2 12h20" />
+            </svg>
+          </motion.button>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-full right-4 mt-3 w-56 bg-[#1a0f0b]/95 backdrop-blur-xl rounded-xl shadow-2xl p-5 border border-[#f5f5f5]/20"
+            >
+              <ul className="flex flex-col space-y-4">
+                {["Home", "Shop", "About", "Lookbook", "Journal"].map((item, index) => (
+                  <li key={index}>
+                    <a
+                      href={item === "Shop" ? "/product" : "/"}
+                      className="text-[#f5f5f5] text-lg hover:text-white transition duration-300"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </motion.header>
+  );
+};
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [particles, setParticles] = useState<
+    { id: number; x: number; y: number; z: number; size: number; speed: number; color: string }[]
+  >([]);
+
   useEffect(() => {
-    const particleCount = typeof window !== 'undefined' && window.innerWidth < 768 ? 15 : 25;
-    const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
+    console.log("ProductsPage mounted");
+
+    // Initialize particles
+    const particleCount = Math.floor(Math.random() * 5) + 12;
+    const newParticles = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      z: Math.random() * 40 - 20,
-      size: Math.random() * 1 + 0.4,
-      speed: Math.random() * 0.08 + 0.03,
-      color: Math.random() > 0.4 ? "#d4a574" : "#f5f5f5",
+      z: Math.random() * 30 - 15,
+      size: Math.random() * 0.8 + 0.4,
+      speed: Math.random() * 0.07 + 0.04,
+      color: Math.random() > 0.5 ? "#e2c299" : "#f5f5f5",
     }));
     setParticles(newParticles);
 
-    const interval = setInterval(() => {
+    const particleInterval = setInterval(() => {
       setParticles((prev) =>
         prev
           .map((p) => ({
             ...p,
             y: p.y + p.speed,
-            x: p.x + (Math.random() - 0.5) * 0.2,
-            z: p.z + (Math.random() - 0.5) * 0.1,
+            x: p.x + (Math.random() - 0.5) * 0.15,
+            z: p.z + (Math.random() - 0.5) * 0.07,
           }))
           .map((p) => ({
             ...p,
@@ -150,566 +323,265 @@ const EarlyAccessPage = () => {
       );
     }, 50);
 
-    return () => clearInterval(interval);
+    async function fetchProducts() {
+      try {
+        const query = `
+          {
+            products(first: 10) {
+              edges {
+                node {
+                  id
+                  title
+                  description
+                  images(first: 2) {
+                    edges {
+                      node {
+                        url
+                      }
+                    }
+                  }
+                  variants(first: 1) {
+                    edges {
+                      node {
+                        price {
+                          amount
+                          currencyCode
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+        const response = await client.request(query);
+        console.log("Shopify response:", JSON.stringify(response, null, 2));
+
+        if (response.errors) {
+          console.error("GraphQL Errors:", response.errors);
+          setError("Failed to fetch products. Check console for details.");
+          return;
+        }
+
+        if (!response.data || !response.data.products.edges.length) {
+          console.warn("No products found or empty response");
+          setError("No products available.");
+          return;
+        }
+
+        const fetchedProducts = response.data.products.edges.map(({ node }: ProductEdge) => node);
+        console.log("Products set:", fetchedProducts);
+        setProducts(fetchedProducts);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+        setError("An error occurred while fetching products.");
+      }
+    }
+    fetchProducts();
+
+    return () => clearInterval(particleInterval);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      // Collect comprehensive user data
-      const userData = {
-        email,
-        deviceFingerprint,
-        screenWidth: window.screen.width,
-        screenHeight: window.screen.height,
-        referrer: document.referrer || null,
-        landingPage: window.location.href,
-        utmSource: new URLSearchParams(window.location.search).get('utm_source'),
-        utmMedium: new URLSearchParams(window.location.search).get('utm_medium'),
-        utmCampaign: new URLSearchParams(window.location.search).get('utm_campaign'),
-        language: navigator.language || (navigator.languages && navigator.languages[0]),
-      };
-
-      const response = await fetch('/api/early-access', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.alreadyExists) {
-          setError('This email is already registered!');
-        } else {
-          setError(data.error || 'Something went wrong. Please try again.');
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      // Success
-      setRegisteredEmail(email);
-      setIsLoading(false);
-      setIsSubmitted(true);
-      
-      // Optional: Track conversion with analytics
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'conversion', {
-          event_category: 'early_access',
-          event_label: 'signup',
-        });
-      }
-
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setError('Network error. Please check your connection and try again.');
-      setIsLoading(false);
-    }
-  };
-
-  // Show loading state while checking device
-  if (isCheckingDevice) {
+  if (error) {
+    console.log("Rendering error state:", error);
     return (
-      <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-[#2a1810] via-[#3d2617] to-[#1a0f08] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a0f0b] flex items-center justify-center relative overflow-hidden">
+        <Header />
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/bg12.png"
+            alt="Background"
+            fill
+            className="object-cover"
+            style={{ objectFit: "cover" }}
+            priority
+          />
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+        <div className="absolute inset-0 z-5 overflow-hidden">
+          {particles.map((p) => (
+            <CrossParticle key={`error-${p.id}`} {...p} />
+          ))}
+        </div>
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 text-[#e2c299] text-center p-8 bg-[#1a0f0b]/80 rounded-xl border border-[#e2c299]/50 shadow-lg max-w-2xl mx-auto"
         >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="mb-4"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#d4a574"
-              strokeWidth={2}
-              className="w-16 h-16 mx-auto"
-              style={{
-                filter: "drop-shadow(0 0 10px #d4a574)",
-              }}
+          <p className="text-lg md:text-xl" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {error}
+          </p>
+          <Link href="/">
+            <motion.button
+              whileHover={{ scale: 1.05, backgroundColor: "#e2c299", color: "#000000" }}
+              whileTap={{ scale: 0.95 }}
+              className="mt-4 border-[1px] border-[#e2c299] text-[#e2c299] px-6 py-3 rounded-full font-medium text-base transition-all duration-300"
+              style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              <path d="M12 2v20M2 12h20" />
-            </svg>
-          </motion.div>
-          <p className="text-[#d4a574] text-lg">Loading...</p>
+              Back to Home
+            </motion.button>
+          </Link>
         </motion.div>
       </div>
     );
   }
 
+  if (!products.length) {
+    console.log("Rendering loading state");
+    return (
+      <div className="min-h-screen bg-[#1a0f0b] flex items-center justify-center relative overflow-hidden">
+        <Header />
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/bg12.png"
+            alt="Background"
+            fill
+            className="object-cover"
+            style={{ objectFit: "cover" }}
+            priority
+          />
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+        <div className="absolute inset-0 z-5 overflow-hidden">
+          {particles.map((p) => (
+            <CrossParticle key={`loading-${p.id}`} {...p} />
+          ))}
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 text-[#e2c299] text-center p-8 bg-[#1a0f0b]/80 rounded-xl max-w-2xl mx-auto"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+          Loading...
+        </motion.div>
+      </div>
+    );
+  }
+
+  console.log("Rendering products:", products);
+
   return (
-    <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-[#2a1810] via-[#3d2617] to-[#1a0f08]">
-      {/* Background Pattern Overlay */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(212, 165, 116, 0.3) 0%, transparent 50%),
-                           radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.2) 0%, transparent 50%)`,
-        }}
-      />
+    <div className="min-h-screen bg-[#1a0f0b] pt-24 pb-16 relative overflow-hidden">
+      <Header />
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/bg12.png"
+          alt="Background"
+          fill
+          className="object-cover"
+          style={{ objectFit: "cover" }}
+          priority
+        />
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
 
       {/* Particles */}
       <div className="absolute inset-0 z-5 overflow-hidden">
         {particles.map((p) => (
-          <CrossParticle key={`particle-${p.id}`} {...p} />
+          <CrossParticle key={`product-${p.id}`} {...p} />
         ))}
       </div>
 
-      {/* Decorative Crosses - Hidden on small mobile */}
-      <GlowingCross className="hidden sm:block absolute top-10 left-10 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 opacity-20" />
-      <GlowingCross className="hidden md:block absolute top-20 right-20 w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 opacity-15" />
-      <GlowingCross className="hidden sm:block absolute bottom-20 left-1/4 w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 opacity-20" />
-      <GlowingCross className="hidden md:block absolute bottom-40 right-1/4 w-10 h-10 sm:w-12 sm:h-12 lg:w-18 lg:h-18 opacity-15" />
-
-      {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8 sm:py-12 sm:px-6 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+      {/* Content */}
+      <motion.div
+        className="relative z-10 w-full max-w-screen-2xl mx-auto px-4 md:px-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.h1
+          className="text-[#e2c299] text-4xl md:text-5xl font-bold text-center mb-12 relative"
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="w-full max-w-2xl"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          style={{ fontFamily: "'Playfair Display', serif" }}
         >
-          <AnimatePresence mode="wait">
-            {!isSubmitted ? (
-              <motion.div
-                key="form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.5 }}
-                className="relative"
-              >
-                {/* Glowing Border Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#d4a574] via-[#e2c299] to-[#d4a574] opacity-20 blur-xl" />
-
-                <div className="relative bg-gradient-to-br from-[#3d2617]/90 to-[#2a1810]/90 backdrop-blur-sm border border-[#d4a574]/30 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl rounded-lg sm:rounded-none">
-                  {/* Top Cross Decoration */}
-                  <motion.div
-                    className="flex justify-center mb-6 sm:mb-8"
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#d4a574"
-                      strokeWidth={2}
-                      className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20"
-                      style={{
-                        filter: "drop-shadow(0 0 10px #d4a574)",
-                      }}
-                    >
-                      <path d="M12 2v20M2 12h20" />
-                    </svg>
-                  </motion.div>
-
-                  {/* Heading */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.8 }}
-                    className="text-center mb-4 sm:mb-6"
-                  >
-                    <h1
-                      className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase text-[#e2c299] mb-3 sm:mb-4 tracking-wide leading-tight"
-                      style={{
-                        fontFamily:
-                          "'Helvetica Neue', 'Proxima Nova', 'Montserrat', sans-serif",
-                        textShadow: "0 0 20px rgba(212, 165, 116, 0.5)",
-                      }}
-                    >
-                      Faith Inspired
-                    </h1>
-                    <h2
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-[#d4a574] mb-3 sm:mb-4"
-                      style={{
-                        fontFamily: "'Inter', sans-serif",
-                      }}
-                    >
-                      Coming Soon
-                    </h2>
-                    <motion.div
-                      className="w-24 sm:w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-[#d4a574] to-transparent"
-                      animate={{
-                        opacity: [0.5, 1, 0.5],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                      }}
-                    />
-                  </motion.div>
-
-                  {/* Subheading */}
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.8 }}
-                    className="text-center text-[#e2c299]/90 text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 leading-relaxed px-2"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    Discover our exclusive collection of <span className="text-[#d4a574] font-semibold">Jesus-inspired</span> products. 
-                    Join our early access list to receive special blessings, insider updates, 
-                    and be first to own <span className="text-[#d4a574] font-semibold">limited edition faith-based items</span>.
-                  </motion.p>
-
-                  {/* Form */}
-                  <motion.form
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
-                    onSubmit={handleSubmit}
-                    className="space-y-4 sm:space-y-6"
-                  >
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="Enter your email address"
-                        className="w-full px-4 py-3 sm:px-6 sm:py-4 bg-[#1a0f08]/50 border-2 border-[#d4a574]/40 text-[#e2c299] placeholder-[#d4a574]/60 focus:outline-none focus:border-[#d4a574] transition-all duration-300 text-sm sm:text-base md:text-lg rounded-md sm:rounded-none"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
-                      />
-                      <motion.div
-                        className="absolute inset-0 border-2 border-[#d4a574] pointer-events-none rounded-md sm:rounded-none"
-                        initial={{ opacity: 0 }}
-                        whileHover={{ opacity: 0.3 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-400 text-center text-xs sm:text-sm md:text-base bg-red-900/20 border border-red-500/30 rounded-md p-3"
-                      >
-                        {error}
-                      </motion.div>
-                    )}
-
-                    <motion.button
-                      type="submit"
-                      disabled={isLoading}
-                      whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(212, 165, 116, 0.5)" }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-[#d4a574] to-[#e2c299] text-[#1a0f08] px-6 py-3 sm:px-8 sm:py-4 uppercase text-base sm:text-lg md:text-xl font-bold tracking-wider relative overflow-hidden transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed rounded-md sm:rounded-none"
-                      style={{
-                        fontFamily:
-                          "'Helvetica Neue', 'Proxima Nova', 'Montserrat', sans-serif",
-                      }}
-                    >
-                      {isLoading ? (
-                        <motion.div
-                          className="flex items-center justify-center space-x-2"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                        >
-                          <motion.div
-                            className="w-2 h-2 bg-[#1a0f08] rounded-full"
-                            animate={{ scale: [1, 1.5, 1] }}
-                            transition={{
-                              duration: 0.6,
-                              repeat: Infinity,
-                              delay: 0,
-                            }}
-                          />
-                          <motion.div
-                            className="w-2 h-2 bg-[#1a0f08] rounded-full"
-                            animate={{ scale: [1, 1.5, 1] }}
-                            transition={{
-                              duration: 0.6,
-                              repeat: Infinity,
-                              delay: 0.2,
-                            }}
-                          />
-                          <motion.div
-                            className="w-2 h-2 bg-[#1a0f08] rounded-full"
-                            animate={{ scale: [1, 1.5, 1] }}
-                            transition={{
-                              duration: 0.6,
-                              repeat: Infinity,
-                              delay: 0.4,
-                            }}
-                          />
-                        </motion.div>
-                      ) : (
-                        "Join the Faith Journey"
-                      )}
-                      <motion.div
-                        className="absolute inset-0 bg-white"
-                        initial={{ x: "-100%" }}
-                        whileHover={{ x: "100%" }}
-                        transition={{ duration: 0.5 }}
-                        style={{ opacity: 0.1 }}
-                      />
-                    </motion.button>
-                  </motion.form>
-
-                  {/* Footer Text */}
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.8, duration: 0.8 }}
-                    className="text-center text-[#d4a574]/60 text-xs sm:text-sm mt-4 sm:mt-6 px-2"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    ✝ We respect your privacy. Unsubscribe at any time. ✝
-                  </motion.p>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative"
-              >
-                {/* Success Glow */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#d4a574] via-[#e2c299] to-[#d4a574] opacity-30 blur-2xl" />
-
-                <div className="relative bg-gradient-to-br from-[#3d2617]/90 to-[#2a1810]/90 backdrop-blur-sm border border-[#d4a574]/40 p-6 sm:p-8 md:p-12 lg:p-16 shadow-2xl text-center rounded-lg sm:rounded-none">
-                  {/* Success Icon */}
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 200,
-                      damping: 15,
-                      delay: 0.2,
-                    }}
-                    className="flex justify-center mb-6 sm:mb-8"
-                  >
-                    <div className="relative">
-                      <motion.div
-                        className="absolute inset-0 bg-[#d4a574] rounded-full blur-xl opacity-50"
-                        animate={{
-                          scale: [1, 1.2, 1],
-                          opacity: [0.5, 0.8, 0.5],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                        }}
-                      />
-                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#d4a574] to-[#e2c299] rounded-full flex items-center justify-center">
-                        <motion.svg
-                          className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#1a0f08]"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.8, delay: 0.5 }}
-                        >
-                          <motion.path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </motion.svg>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Success Message */}
-                  <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-[#e2c299] mb-4 sm:mb-6 tracking-wide"
-                    style={{
-                      fontFamily:
-                        "'Helvetica Neue', 'Proxima Nova', 'Montserrat', sans-serif",
-                      textShadow: "0 0 20px rgba(212, 165, 116, 0.5)",
-                    }}
-                  >
-                    Blessed Be!
-                  </motion.h2>
-
-                  <motion.div
-                    className="w-24 sm:w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-[#d4a574] to-transparent mb-6 sm:mb-8"
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
-                  />
-
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.7, duration: 0.6 }}
-                    className="text-[#e2c299]/90 text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 leading-relaxed px-2"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    {registeredEmail && (
-                      <span className="block text-[#d4a574] font-semibold mb-2 text-sm sm:text-base break-all">
-                        {registeredEmail}
-                      </span>
-                    )}
-                    Your email has been{" "}
-                    <span className="text-[#d4a574] font-semibold">
-                      successfully registered
-                    </span>
-                    !
-                  </motion.p>
-
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.9, duration: 0.6 }}
-                    className="text-[#d4a574]/80 text-sm sm:text-base md:text-lg mb-6 sm:mb-8 px-2"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    You're now part of our faith community! Watch your inbox for 
-                    <span className="text-[#e2c299] font-semibold"> exclusive early access </span> 
-                    to our Jesus-inspired collection and special blessings.
-                  </motion.p>
-
-                  {/* Bible Verse */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.0, duration: 0.6 }}
-                    className="border-t border-b border-[#d4a574]/20 py-4 sm:py-6 mb-6 sm:mb-8 px-2"
-                  >
-                    <p className="text-[#e2c299] italic text-xs sm:text-sm md:text-base mb-2 leading-relaxed">
-                      "For where two or three gather in my name, there am I with them."
-                    </p>
-                    <p className="text-[#d4a574]/70 text-xs sm:text-sm">
-                      — Matthew 18:20
-                    </p>
-                  </motion.div>
-
-                  {/* Decorative Elements */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.1, duration: 0.6 }}
-                    className="flex justify-center space-x-3 sm:space-x-4 mb-6 sm:mb-8"
-                  >
-                    <motion.div
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: 0,
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#d4a574"
-                        strokeWidth={2}
-                        className="w-6 h-6 sm:w-8 sm:h-8"
-                        style={{
-                          filter: "drop-shadow(0 0 8px #d4a574)",
-                        }}
-                      >
-                        <path d="M12 2v20M2 12h20" />
-                      </svg>
-                    </motion.div>
-                    <motion.div
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: 0.3,
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#e2c299"
-                        strokeWidth={2}
-                        className="w-6 h-6 sm:w-8 sm:h-8"
-                        style={{
-                          filter: "drop-shadow(0 0 8px #e2c299)",
-                        }}
-                      >
-                        <path d="M12 2v20M2 12h20" />
-                      </svg>
-                    </motion.div>
-                    <motion.div
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: 0.6,
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#d4a574"
-                        strokeWidth={2}
-                        className="w-6 h-6 sm:w-8 sm:h-8"
-                        style={{
-                          filter: "drop-shadow(0 0 8px #d4a574)",
-                        }}
-                      >
-                        <path d="M12 2v20M2 12h20" />
-                      </svg>
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Social Proof */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.3, duration: 0.6 }}
-                    className="border-t border-[#d4a574]/20 pt-4 sm:pt-6"
-                  >
-                    <p className="text-[#d4a574]/60 text-xs sm:text-sm md:text-base mb-3 sm:mb-4">
-                      ✝ Join Our Faith Community ✝
-                    </p>
-                    <div className="flex justify-center space-x-4 sm:space-x-6">
-                      {["Instagram", "Facebook", "YouTube"].map((social, index) => (
-                        <motion.a
-                          key={social}
-                          href="#"
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 1.5 + index * 0.1, duration: 0.4 }}
-                          whileHover={{
-                            scale: 1.2,
-                            filter: "drop-shadow(0 0 8px #d4a574)",
-                          }}
-                          className="text-[#d4a574] hover:text-[#e2c299] transition-colors duration-300"
-                        >
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-current rounded-full flex items-center justify-center">
-                            <span className="text-xs sm:text-sm uppercase font-bold">
-                              {social[0]}
-                            </span>
-                          </div>
-                        </motion.a>
-                      ))}
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          Our Collection
+          <motion.span
+            className="absolute left-0 right-0 bottom-[-8px] h-[2px] bg-[#e2c299]"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: "easeInOut" }}
+          />
+        </motion.h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-16">
+          {products.map((product) => (
+            <motion.div
+              key={product.id}
+              className="relative rounded-xl overflow-hidden border border-[#e2c299]/30 max-w-2xl w-full mx-auto"
+              whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(226, 194, 153, 0.4)" }}
+              transition={{ duration: 0.3 }}
+            >
+              <ProductCard product={product} productId={product.id} />
+            </motion.div>
+          ))}
+        </div>
+        <motion.div
+          className="text-center mt-16 relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <p
+            className="text-[#e2c299] text-lg md:text-xl italic relative"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+          VerseAndMe is not a brand. It&apos;s a calling.
+            <motion.span
+              className="absolute left-0 right-0 bottom-[-4px] h-[1px] bg-[#e2c299]/50"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.8, delay: 1, ease: "easeInOut" }}
+            />
+          </p>
         </motion.div>
-      </div>
 
-      {/* Bottom Decorative Gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-32 bg-gradient-to-t from-[#1a0f08] to-transparent pointer-events-none" />
+        {/* Animated Crosses */}
+        <motion.div
+          className="absolute left-1/4 bottom-4"
+          animate={{ rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <CrossSVG color="#f5f5f5" />
+        </motion.div>
+        <motion.div
+          className="absolute right-1/4 bottom-4"
+          animate={{ rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <CrossSVG color="#f5f5f5" />
+        </motion.div>
+      </motion.div>
+
+      <style jsx>{`
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&family=Playfair+Display:wght@400;700&display=swap");
+
+        @media (max-width: 768px) {
+          .max-w-2xl {
+            max-width: 90%;
+          }
+          .text-4xl {
+            font-size: 2.25rem;
+            
+          }
+          .text-lg {
+            font-size: 1.125rem;
+          }
+          .grid-cols-2 {
+            grid-template-columns: 1fr;
+          }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+      `}</style>
     </div>
   );
-};
-
-export default EarlyAccessPage;
+}
