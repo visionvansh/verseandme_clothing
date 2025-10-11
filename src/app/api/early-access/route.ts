@@ -1,3 +1,4 @@
+//Volumes/vision/codes/verse/my-app/src/app/api/early-access
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
