@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
     "@shopify/storefront-api-client": "^1.0.8",
     "autoprefixer": "^10.4.21",
     "framer-motion": "^12.23.6",
