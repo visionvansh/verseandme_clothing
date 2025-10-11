@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate" 
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.6.2",
@@ -29,6 +30,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "prisma": "^6.17.1" 
   }
 }
