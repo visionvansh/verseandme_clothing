@@ -223,7 +223,7 @@ const EarlyAccessPage = () => {
                     <h4 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-2 tracking-tight whitespace-nowrap">
                       JOIN THE VERSEANDME FAMILY
                     </h4>
-                    <p className="text-base sm:text-lg md:text-xl text-gray-600 font-light tracking-wider">
+                    <p className="text-sm sm:text-base md:text-lg text-gray-600 font-light tracking-wider">
                       GET ACCESS TO EARLY DROPS
                     </p>
                     <div className="w-24 sm:w-32 h-px mx-auto mt-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />
